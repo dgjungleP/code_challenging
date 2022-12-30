@@ -1,13 +1,37 @@
 package com.jungle.algorithms;
 
 import javax.swing.plaf.synth.SynthTextAreaUI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Digraph<T> {
     private final List<Point<T>> POINT_LIST = new ArrayList<>();
+
+    public List<T> topologicalSort() {
+        if (!checkIsDAG(this)) {
+            System.out.println("Can not topological sort if the digraph is not DAG");
+            return new ArrayList<>();
+        }
+        List<Point<T>> starPointList = POINT_LIST.stream().filter(data -> Objects.equals(data.input, 0L))
+                .collect(Collectors.toList());
+        Stack<T> checkedStack = new Stack<>();
+        for (Point<T> point : starPointList) {
+            dfs(point, checkedStack);
+        }
+        return new ArrayList<>(checkedStack);
+    }
+
+    private void dfs(Point<T> point, Stack<T> checkedQueue) {
+        if (!checkedQueue.contains(point.entity)) {
+            checkedQueue.push(point.entity);
+            point.route.stream().map(data -> data.target).filter(data -> !data.equals(point.entity)).map(this::getPoint)
+                    .forEach(targetPoint -> targetPoint.ifPresent(data -> dfs(data, checkedQueue)));
+        }
+    }
+
+    private boolean checkIsDAG(Digraph<T> digraph) {
+        return true;
+    }
 
 
     public static class Point<T> {
